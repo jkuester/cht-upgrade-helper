@@ -25,20 +25,29 @@ const getNumberQuestionNames = (fields) => {
 };
 
 const getCalculates = (fields) => fields.filter(node => node.calculate);
+const getRelevants = (fields) => fields.filter(node => node.relevant);
 
 const getNumberFieldsToCheck = (formData) => {
   const formFields = getFormFields(formData);
   const calculates = getCalculates(formFields);
+  const relevants = getRelevants(formFields);
+
   return getNumberQuestionNames(formFields)
     .reduce((fieldsToCheck, questionName) => {
       const localName = questionName.split('/').pop();
-      const calcs = calculates.filter((calc => calc.calculate.includes(localName)));
-      if(calcs.length) {
+      const namePattern = new RegExp(`\/${localName}[^\w|\/]`);
+      const calcs = calculates.filter(calc => namePattern.test(calc.calculate));
+      const relevs = relevants.filter(relev => namePattern.test(relev.relevant));
+      if(calcs.length || relevs.length) {
         fieldsToCheck.push({
           questionName,
           calculates: calcs.map(calc => ({
             name: calc.nodeset,
             calculate: calc.calculate
+          })),
+          relevants: relevs.map(relev => ({
+            name: relev.nodeset,
+            relevant: relev.relevant
           }))
         });
       }
@@ -51,7 +60,7 @@ const getAllFiles = (dirPath) => {
     .readdirSync(dirPath)
     .reduce((xmlFiles, file) => {
       const filePath = `${dirPath}/${file}`;
-      if(fs.statSync(filePath).isDirectory()) {
+      if(fs.statSync(filePath).isDirectory() && 'node_modules' !== file) {
         return xmlFiles.concat(getAllFiles(filePath));
       } else if(file.endsWith('.xml')) {
         xmlFiles.push(filePath);
@@ -61,7 +70,7 @@ const getAllFiles = (dirPath) => {
 }
 
 (async function() {
-  const configDir = '/home/jlkuester7/git/cht-core/config/default/forms';
+  const configDir = '/home/jlkuester7/git/cht-core/config/default';
   const forms = await Promise.all(getAllFiles(configDir)
     .map(async(fileName) => ({
       fileName,
@@ -83,12 +92,22 @@ const getAllFiles = (dirPath) => {
     .filter(formData => formData.data.length)
     .forEach(({ fileName, data }) => {
       output.push(`### .${fileName.substring(configDir.length)}`);
-      data.forEach(({ questionName, calculates }) => {
+      data.forEach(({ questionName, calculates, relevants }) => {
         output.push(`#### ${questionName}`);
-        calculates.forEach(({ name, calculate }) => {
-          output.push(`  - ${name}`);
-          output.push(`    - \`${calculate}\``);
-        });
+        if(calculates.length) {
+          output.push('calculate:');
+          calculates.forEach(({ name, calculate }) => {
+            output.push(`  - ${name}`);
+            output.push(`    - \`${calculate}\``);
+          });
+        }
+        if(relevants.length) {
+          output.push('relevant:');
+          relevants.forEach(({ name, relevant }) => {
+            output.push(`  - ${name}`);
+            output.push(`    - \`${relevant}\``);
+          });
+        }
       });
     });
 
