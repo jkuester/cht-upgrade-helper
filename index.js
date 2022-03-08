@@ -156,19 +156,20 @@ const getAllFiles = (dirPath) => {
 
   const output = ['# Upgrade Helper Results'];
 
-  output.push('## Number questions to check');
-  output.push('The value used for unanswered number questions in `calculation`s has changed. ' +
-    'Previously `0` would be given to the `calculation` logic, but the new version of the CHT follows the ' +
-    '[ODK spec](https://docs.getodk.org/form-logic/#empty-values) and returns `NaN` as the value of an unanswered number question.');
-  output.push('This behavior change can break form logic that expects `0`. ' +
-    'All `calculation`s involving non-required number questions should be reviewed (these are listed below).');
-  output.push('One potential fix is to update the `calculation` to use the [coalesce](https://docs.getodk.org/form-operators-functions/#coalesce) function.' +
-    'So, `${potentially_empty_value} > 0` becomes `coalesce(${potentially_empty_value}, 0) > 0`.');
-  output.push('See [this issue](https://github.com/medic/cht-core/issues/7222) for more context.');
-  forms
+  const numberQuestionsToCheck =   forms
     .map(({ fileName, data }) => ({ fileName, data: getNumberFieldsToCheck(data) }))
-    .filter(formData => formData.data.length)
-    .forEach(({ fileName, data }) => {
+    .filter(formData => formData.data.length);
+  if(numberQuestionsToCheck.length) {
+    output.push('## Number questions to check');
+    output.push('The value used for unanswered number questions in `calculation`s has changed. ' +
+      'Previously `0` would be given to the `calculation` logic, but the new version of the CHT follows the ' +
+      '[ODK spec](https://docs.getodk.org/form-logic/#empty-values) and returns `NaN` as the value of an unanswered number question.');
+    output.push('This behavior change can break form logic that expects `0`. ' +
+      'All `calculation`s involving non-required number questions should be reviewed (these are listed below).');
+    output.push('One potential fix is to update the `calculation` to use the [coalesce](https://docs.getodk.org/form-operators-functions/#coalesce) function.' +
+      'So, `${potentially_empty_value} > 0` becomes `coalesce(${potentially_empty_value}, 0) > 0`.');
+    output.push('See [this issue](https://github.com/medic/cht-core/issues/7222) for more context.');
+    numberQuestionsToCheck.forEach(({ fileName, data }) => {
       output.push(`### .${fileName.substring(configDir.length)}`);
       data.forEach(({ questionName, calculates, relevants }) => {
         output.push(`#### ${questionName}`);
@@ -188,28 +189,31 @@ const getAllFiles = (dirPath) => {
         }
       });
     });
+  }
 
-  output.push('## Non-relevant questions with defaults to check');
-  output.push('The behavior of default values for non-relevant fields has changed. ' +
-    'Previously, if a question with a default value was never relevant, its default value would be used ' +
-    'for calculations and other form logic.');
-  output.push('Now, however, the value from a non-relevant field will always be empty, regardless of the default value. ' +
-    '(Note that because of [this Enketo issue](https://github.com/enketo/enketo-core/issues/849) it can appear that ' +
-    'the default value is being used while filling out the form. But, when the form it saved, the value will be cleared ' +
-    'and all the dependent logic will be recalculated.)');
-  output.push('So, questions with default values that might be non-relevant, but are used in other form logic ' +
-    'should be reviewed (these are listed below).');
-  output.push('One potential fix is to add a `calculation` that can be referenced by the form logic ' +
-    'instead of the non-relevant question.  The `calculate` can use the ' +
-    '[coalesce](https://docs.getodk.org/form-operators-functions/#coalesce) function like this: ' +
-    '`coalesce(${non_relevant_question}, *original default for non_relevant_question*)`.');
-  forms
+  const nonRelQuestionsWithDefaults = forms
     .map(({ fileName, data }) => ({ fileName, data: getNonRelevantQuestionsWithDefaultsToCheck(data) }))
-    .filter(formData => formData.data.length)
-    .forEach(({ fileName, data }) => {
+    .filter(formData => formData.data.length);
+  if(nonRelQuestionsWithDefaults.length) {
+    output.push('## Non-relevant questions with defaults to check');
+    output.push('The behavior of default values for non-relevant fields has changed. ' +
+      'Previously, if a question with a default value was never relevant, its default value would be used ' +
+      'for calculations and other form logic.');
+    output.push('Now, however, the value from a non-relevant field will always be empty, regardless of the default value. ' +
+      '(Note that because of [this Enketo issue](https://github.com/enketo/enketo-core/issues/849) it can appear that ' +
+      'the default value is being used while filling out the form. But, when the form it saved, the value will be cleared ' +
+      'and all the dependent logic will be recalculated.)');
+    output.push('So, questions with default values that might be non-relevant, but are used in other form logic ' +
+      'should be reviewed (these are listed below).');
+    output.push('One potential fix is to add a `calculation` that can be referenced by the form logic ' +
+      'instead of the non-relevant question.  The `calculate` can use the ' +
+      '[coalesce](https://docs.getodk.org/form-operators-functions/#coalesce) function like this: ' +
+      '`coalesce(${non_relevant_question}, *original default for non_relevant_question*)`.');
+    nonRelQuestionsWithDefaults.forEach(({ fileName, data }) => {
       output.push(`### .${fileName.substring(configDir.length)}`);
       data.forEach(({ nodeset }) => output.push(`  - \`${nodeset}\``));
     });
+  }
 
   fs.writeFileSync(Path.join(configDir, 'upgrade_helper_output.md'), output.join('\n\n'));
 })();
