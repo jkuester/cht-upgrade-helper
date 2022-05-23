@@ -1,10 +1,10 @@
 const fs = require('fs');
 const parseArgs = require('minimist')
 const Path = require("path");
-const xml2js = require('xml2js');
+
+const getXmlFiles = require('./xml-files');
 
 const XPATH_PATTERN = /(?<=\W|^)(\.\.\/|\.\/|\/)[\w/.]+/g;
-const xmlParser = new xml2js.Parser({ normalize: true });
 
 const getFormModel = (formData) => {
   if(!formData['h:html']
@@ -201,37 +201,10 @@ const getFieldsWithInvaildXpaths = (formData) => {
   return Array.from(invalidDataByQuestionName.values());
 };
 
-const getAllFiles = (dirPath) => {
-  return fs
-    .readdirSync(dirPath)
-    .reduce((xmlFiles, file) => {
-      const filePath = `${dirPath}/${file}`;
-      if(fs.statSync(filePath).isDirectory() && 'node_modules' !== file) {
-        return xmlFiles.concat(getAllFiles(filePath));
-      } else if(file.endsWith('.xml')) {
-        xmlFiles.push(filePath);
-      }
-      return xmlFiles;
-    }, []);
-}
-
 module.exports = async (argv, env) => {
   const cmdArgs = parseArgs(argv);
   const configDir = Path.resolve(cmdArgs.source || '.');
-
-  const forms = await Promise.all(
-    getAllFiles(configDir)
-      .map(async(fileName) => ({
-        fileName,
-        data: await xmlParser.parseStringPromise(fs.readFileSync(fileName, 'UTF-8'))
-      }))
-  );
-
-  // const fileName = '/home/jlkuester7/git/cht-core/config/standard/forms/app/immunization_visit.xml';
-  // const forms = [{
-  //   fileName,
-  //   data: await xmlParser.parseStringPromise(fs.readFileSync(fileName, 'UTF-8'))
-  // }];
+  const forms = await getXmlFiles(configDir);
 
   const output = ['# Upgrade Helper Results'];
 
