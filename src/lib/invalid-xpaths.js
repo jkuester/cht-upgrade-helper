@@ -1,4 +1,4 @@
-const { getFormModel, getFormFields, getCalculates, getRelevants } = require('./utils');
+const { getFormModel, getFormFields, getCalculates, getRelevants } = require('./common');
 
 const XPATH_PATTERN = /(?<=\W|^)(\.\.\/|\.\/|\/)[\w/.]+/g;
 
@@ -8,7 +8,6 @@ const isInvalidXpathPath = (nodePaths, field, path) => {
     return !nodePaths.includes(path);
   }
   const searchStack = field.nodeset.split('/');
-  // searchStack.pop();
   let searchPath = path;
   (path.match(/\.\.\//g)||[]).forEach(_ => {
     searchStack.pop();
@@ -108,4 +107,4 @@ module.exports = (configDir, forms) => {
   }
 
   return output;
-}
+};
