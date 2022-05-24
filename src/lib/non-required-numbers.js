@@ -15,7 +15,7 @@ const getNumberFieldsToCheck = (formData) => {
   return getNumberQuestionNames(formFields)
     .reduce((fieldsToCheck, questionName) => {
       const localName = questionName.split('/').pop();
-      const namePattern = new RegExp(`\/${localName}[^\w|\/]`);
+      const namePattern = new RegExp(`/${localName}[^w|/]`);
       const calcs = calculates.filter(calc => namePattern.test(calc.calculate));
       const relevs = relevants.filter(relev => namePattern.test(relev.relevant));
       if(calcs.length || relevs.length) {

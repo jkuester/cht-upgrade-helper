@@ -16,7 +16,7 @@ const getFormFields = (formData) => {
     return [];
   }
   return formModel.bind.map(node => node['$']);
-}
+};
 
 const getCalculates = (fields) => fields.filter(node => node.calculate);
 
@@ -27,4 +27,4 @@ module.exports = {
   getFormFields,
   getCalculates,
   getRelevants
-}
+};

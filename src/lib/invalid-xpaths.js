@@ -9,13 +9,13 @@ const isInvalidXpathPath = (nodePaths, field, path) => {
   }
   const searchStack = field.nodeset.split('/');
   let searchPath = path;
-  (path.match(/\.\.\//g)||[]).forEach(_ => {
+  (path.match(/\.\.\//g)||[]).forEach(() => {
     searchStack.pop();
     searchPath = searchPath.replace('../', '');
   });
   searchPath = searchPath.replace('./', '');
   searchStack.push(searchPath);
-  const searchName = searchStack.join('/')
+  const searchName = searchStack.join('/');
   return !nodePaths.includes(searchName);
 };
 
@@ -28,7 +28,7 @@ const getNodePaths = (currentPath, node) => {
     }
     const entryPath = `${currentPath}/${name}`;
     currentNames.push(entryPath);
-    if(value[0] && typeof value[0] === 'object' && value[0] != null) {
+    if(value[0] && typeof value[0] === 'object' && value[0] !== null) {
       currentNames = [...currentNames, ...getNodePaths(entryPath, value[0])];
     }
   });

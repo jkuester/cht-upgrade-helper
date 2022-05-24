@@ -56,7 +56,7 @@ const getNonRelevantQuestionsWithDefaultsToCheck = (formData) => {
       return steps.find(step => relevants.filter(relevant => relevant.nodeset.endsWith(`/${step}`)).length);
     }).filter(defaultField => {
       const localName = defaultField.nodeset.split('/').pop();
-      const namePattern = new RegExp(`\/${localName}[^\w|\/]`);
+      const namePattern = new RegExp(`/${localName}[^w|/]`);
       if(calculates.find(calc => namePattern.test(calc.calculate))) {
         return true;
       }

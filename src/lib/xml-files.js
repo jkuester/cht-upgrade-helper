@@ -14,7 +14,7 @@ const getXmlFilePaths = (dirPath) => {
       }
       return xmlFiles;
     }, []);
-}
+};
 
 module.exports = (configDir) => {
   // const fileName = '/home/jlkuester7/git/cht-core/config/standard/forms/app/immunization_visit.xml';
@@ -30,4 +30,4 @@ module.exports = (configDir) => {
         data: await xmlParser.parseStringPromise(file)
       }))
   );
-}
+};

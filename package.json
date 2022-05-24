@@ -3,11 +3,14 @@
   "version": "4.0.0",
   "description": "Helper script for reviewing configuration when upgrading the CHT",
   "main": "./src/lib/main.js",
-  "bin": {
-    "cht-upgrade-helper": "src/bin/index.js"
+  "engines": {
+    "node": ">=8.10.0"
   },
   "scripts": {
     "eslint": "eslint 'src/**/*.js'"
+  },
+  "bin": {
+    "cht-upgrade-helper": "src/bin/index.js"
   },
   "repository": {
     "type": "git",
