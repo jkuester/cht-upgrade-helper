@@ -1,0 +1,33 @@
+{
+  "name": "cht-upgrade-helper",
+  "version": "4.0.0",
+  "description": "Helper script for reviewing configuration when upgrading the CHT",
+  "main": "./src/lib/main.js",
+  "engines": {
+    "node": ">=8.10.0"
+  },
+  "scripts": {
+    "eslint": "eslint 'src/**/*.js'"
+  },
+  "bin": {
+    "cht-upgrade-helper": "src/bin/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jkuester/cht-upgrade-helper.git"
+  },
+  "author": "",
+  "license": "AGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/jkuester/cht-upgrade-helper/issues"
+  },
+  "homepage": "https://github.com/jkuester/cht-upgrade-helper#readme",
+  "dependencies": {
+    "eslint": "^6.8.0",
+    "minimist": "^1.2.6",
+    "xml2js": "^0.4.23"
+  },
+  "devDependencies": {
+    "eslint-plugin-node": "^11.1.0"
+  }
+}
