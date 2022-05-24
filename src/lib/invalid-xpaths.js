@@ -74,37 +74,34 @@ const getFieldsWithInvaildXpaths = (formData) => {
   return Array.from(invalidDataByQuestionName.values());
 };
 
-module.exports = (configDir, forms) => {
-  const output = [];
+module.exports = (outStream, configDir, forms) => {
   const fieldsWithInvalidXpaths =   forms
     .map(({ fileName, data }) => ({ fileName, data: getFieldsWithInvaildXpaths(data) }))
     .filter(formData => formData.data.length);
   if(fieldsWithInvalidXpaths.length) {
-    output.push('## Fields with xPath paths to check');
-    output.push('Explicit [xPath paths](https://docs.getodk.org/form-logic/#advanced-xpath-paths) (either absolute or relative) ' +
-      'provided in a form do not cause an error if they are invalid (if the element they identify does not exist in the form).');
-    output.push('So, these invalid paths can be difficult to identify. Below are listed the fields using xPath paths ' +
-      'in their `calculation` or `relevant` logic that have been flagged as being potentially invalid.');
-    output.push('These fields (and their accompanying logic) should be evaluated to ensure the paths are correct.');
+    outStream.write('## Fields with xPath paths to check\n');
+    outStream.write('Explicit [xPath paths](https://docs.getodk.org/form-logic/#advanced-xpath-paths) (either absolute or relative) ' +
+      'provided in a form do not cause an error if they are invalid (if the element they identify does not exist in the form).\n');
+    outStream.write('So, these invalid paths can be difficult to identify. Below are listed the fields using xPath paths ' +
+      'in their `calculation` or `relevant` logic that have been flagged as being potentially invalid.\n');
+    outStream.write('These fields (and their accompanying logic) should be evaluated to ensure the paths are correct.\n');
     fieldsWithInvalidXpaths.forEach(({ fileName, data }) => {
-      output.push(`### .${fileName.substring(configDir.length)}`);
+      outStream.write(`### .${fileName.substring(configDir.length)}\n`);
       data.forEach(({ questionName, calculates, relevants }) => {
-        output.push(`#### ${questionName}`);
+        outStream.write(`#### ${questionName}\n`);
         if(calculates && calculates.length) {
-          output.push('calculate:');
+          outStream.write('calculate:\n');
           calculates.forEach(path => {
-            output.push(`  - ${path}`);
+            outStream.write(`  - ${path}\n`);
           });
         }
         if(relevants && relevants.length) {
-          output.push('relevant:');
+          outStream.write('relevant:\n');
           relevants.forEach(path => {
-            output.push(`  - ${path}`);
+            outStream.write(`  - ${path}\n`);
           });
         }
       });
     });
   }
-
-  return output;
 };

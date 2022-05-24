@@ -16,18 +16,18 @@ const getXmlFilePaths = (dirPath) => {
     }, []);
 };
 
-module.exports = (configDir) => {
-  // const fileName = '/home/jlkuester7/git/cht-core/config/standard/forms/app/immunization_visit.xml';
-  // const forms = [{
-  //   fileName,
-  //   data: await xmlParser.parseStringPromise(fs.readFileSync(fileName, 'UTF-8'))
-  // }];
-  return Promise.all(
-    getXmlFilePaths(configDir)
-      .map(fileName => ({ fileName, file: fs.readFileSync(fileName, 'UTF-8') }))
-      .map(async({ fileName, file }) => ({
-        fileName,
-        data: await xmlParser.parseStringPromise(file)
-      }))
-  );
+const getXmlFile = (fileName) => {
+  const file = fs.readFileSync(fileName, 'UTF-8');
+  return xmlParser.parseStringPromise(file)
+    .then(data => ({fileName, data}));
+};
+
+module.exports = {
+  getXmlFile,
+  getAllXmlFiles: (configDir) => {
+    return Promise.all(
+      getXmlFilePaths(configDir)
+        .map((fileName) => getXmlFile(fileName))
+    );
+  }
 };

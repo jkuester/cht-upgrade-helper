@@ -1,23 +1,26 @@
-const fs = require('fs');
-const parseArgs = require('minimist');
 const Path = require('path');
 
-const getXmlFiles = require('./xml-files');
+const { getXmlFile, getAllXmlFiles } = require('./xml-files');
 const invalidXpaths = require('./invalid-xpaths');
 const nonRequiredNumbers = require('./non-required-numbers');
 const nonRelevantWithDefaults = require('./non-relevant-with-defaults');
 
-module.exports = async (argv) => {
-  const cmdArgs = parseArgs(argv);
-  const configDir = Path.resolve(cmdArgs.source || '.');
-  const forms = await getXmlFiles(configDir);
+const getIndividualXmlFiles = (configDir, fileNames) => {
+  return Promise.all(
+    fileNames
+      .map(fileName => Path.resolve(configDir, fileName))
+      .map(filePath => getXmlFile(filePath))
+  );
+};
 
-  const output = [
-    '# Upgrade Helper Results',
-    ...invalidXpaths(configDir, forms),
-    ...nonRequiredNumbers(configDir, forms),
-    ...nonRelevantWithDefaults(configDir, forms)
-  ];
+module.exports = async (outStream, options) => {
+  const configDir = Path.resolve(options.configDir || '.');
+  const forms = options._ && options._.length
+    ? await getIndividualXmlFiles(configDir, options._)
+    : await getAllXmlFiles(configDir);
 
-  fs.writeFileSync(Path.join(configDir, 'upgrade_helper_output.md'), output.join('\n\n'));
+  outStream.write('# Upgrade Helper Results\n');
+  invalidXpaths(outStream, configDir, forms);
+  nonRequiredNumbers(outStream, configDir, forms);
+  nonRelevantWithDefaults(outStream, configDir, forms);
 };

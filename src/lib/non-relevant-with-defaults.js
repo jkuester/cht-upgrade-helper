@@ -64,32 +64,28 @@ const getNonRelevantQuestionsWithDefaultsToCheck = (formData) => {
     });
 };
 
-module.exports = (configDir, forms) => {
-  const output = [];
-
+module.exports = (outStream, configDir, forms) => {
   const nonRelQuestionsWithDefaults = forms
     .map(({ fileName, data }) => ({ fileName, data: getNonRelevantQuestionsWithDefaultsToCheck(data) }))
     .filter(formData => formData.data.length);
   if(nonRelQuestionsWithDefaults.length) {
-    output.push('## Non-relevant questions with defaults to check');
-    output.push('The behavior of default values for non-relevant fields has changed. ' +
+    outStream.write('## Non-relevant questions with defaults to check\n');
+    outStream.write('The behavior of default values for non-relevant fields has changed. ' +
       'Previously, if a question with a default value was never relevant, its default value would be used ' +
-      'for calculations and other form logic.');
-    output.push('Now, however, the value from a non-relevant field will always be empty, regardless of the default value. ' +
+      'for calculations and other form logic.\n');
+    outStream.write('Now, however, the value from a non-relevant field will always be empty, regardless of the default value. ' +
       '(Note that because of [this Enketo issue](https://github.com/enketo/enketo-core/issues/849) it can appear that ' +
       'the default value is being used while filling out the form. But, when the form it saved, the value will be cleared ' +
-      'and all the dependent logic will be recalculated.)');
-    output.push('So, questions with default values that might be non-relevant, but are used in other form logic ' +
-      'should be reviewed (these are listed below).');
-    output.push('One potential fix is to add a `calculation` that can be referenced by the form logic ' +
+      'and all the dependent logic will be recalculated.)\n');
+    outStream.write('So, questions with default values that might be non-relevant, but are used in other form logic ' +
+      'should be reviewed (these are listed below).\n');
+    outStream.write('One potential fix is to add a `calculation` that can be referenced by the form logic ' +
       'instead of the non-relevant question.  The `calculate` can use the ' +
       '[coalesce](https://docs.getodk.org/form-operators-functions/#coalesce) function like this: ' +
-      '`coalesce(${non_relevant_question}, *original default for non_relevant_question*)`.');
+      '`coalesce(${non_relevant_question}, *original default for non_relevant_question*)`.\n');
     nonRelQuestionsWithDefaults.forEach(({ fileName, data }) => {
-      output.push(`### .${fileName.substring(configDir.length)}`);
-      data.forEach(({ nodeset }) => output.push(`  - \`${nodeset}\``));
+      outStream.write(`### .${fileName.substring(configDir.length)}\n`);
+      data.forEach(({ nodeset }) => outStream.write(`  - \`${nodeset}\`\n`));
     });
   }
-
-  return output;
 };
