@@ -66,17 +66,21 @@ module.exports = (outStream, configDir, forms) => {
       data.forEach(({ questionName, calculates, relevants }) => {
         outStream.write(`#### ${questionName}\n`);
         if(calculates.length) {
-          outStream.write('calculate:\n');
+          outStream.write('- calculate:\n');
           calculates.forEach(({ name, calculate }) => {
             outStream.write(`  - ${name}\n`);
-            outStream.write(`    - \`${calculate}\`\n`);
+            outStream.write('    ```\n');
+            outStream.write(`    ${calculate}\n`);
+            outStream.write('    ```\n');
           });
         }
         if(relevants.length) {
-          outStream.write('relevant:\n');
+          outStream.write('- relevant:\n');
           relevants.forEach(({ name, relevant }) => {
             outStream.write(`  - ${name}\n`);
-            outStream.write(`    - \`${relevant}\`\n`);
+            outStream.write('    ```\n');
+            outStream.write(`    ${relevant}\n`);
+            outStream.write('    ```\n');
           });
         }
       });

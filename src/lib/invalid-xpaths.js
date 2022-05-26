@@ -90,15 +90,15 @@ module.exports = (outStream, configDir, forms) => {
       data.forEach(({ questionName, calculates, relevants }) => {
         outStream.write(`#### ${questionName}\n`);
         if(calculates && calculates.length) {
-          outStream.write('calculate:\n');
+          outStream.write('- calculate:\n');
           calculates.forEach(path => {
-            outStream.write(`  - ${path}\n`);
+            outStream.write(`  - \`${path}\`\n`);
           });
         }
         if(relevants && relevants.length) {
-          outStream.write('relevant:\n');
+          outStream.write('- relevant:\n');
           relevants.forEach(path => {
-            outStream.write(`  - ${path}\n`);
+            outStream.write(`  - \`${path}\`\n`);
           });
         }
       });
