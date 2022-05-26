@@ -14,10 +14,22 @@ const getNumberFieldsToCheck = (formData) => {
 
   return getNumberQuestionNames(formFields)
     .reduce((fieldsToCheck, questionName) => {
-      const localName = questionName.split('/').pop();
-      const namePattern = new RegExp(`/${localName}[^w|/]`);
-      const calcs = calculates.filter(calc => namePattern.test(calc.calculate));
-      const relevs = relevants.filter(relev => namePattern.test(relev.relevant));
+
+      const namePattern = new RegExp(`(?<=\\W|^)(${questionName})(?![\\w/])`, 'g');
+      const coalescePattern = new RegExp(`(?<=coalesce\\(\\s*)(${questionName})(?![\\w/])`, 'g');
+      const containsQuestionName = (value) => {
+        const nameMatches = value.match(namePattern);
+        if(!nameMatches) {
+          return false;
+        }
+        // If the field is already the first param in a `coalesce` function, assume it is safe.
+        // Have to do this double-check since there is no negative look-behind in Node 8.
+        const coalesceMatches = value.match(coalescePattern);
+        return !coalesceMatches || coalesceMatches.length < nameMatches.length;
+      };
+
+      const calcs = calculates.filter(calcv => containsQuestionName(calcv.calculate));
+      const relevs = relevants.filter(relev => containsQuestionName(relev.relevant));
       if(calcs.length || relevs.length) {
         fieldsToCheck.push({
           questionName,
@@ -54,17 +66,21 @@ module.exports = (outStream, configDir, forms) => {
       data.forEach(({ questionName, calculates, relevants }) => {
         outStream.write(`#### ${questionName}\n`);
         if(calculates.length) {
-          outStream.write('calculate:\n');
+          outStream.write('- calculate:\n');
           calculates.forEach(({ name, calculate }) => {
             outStream.write(`  - ${name}\n`);
-            outStream.write(`    - \`${calculate}\`\n`);
+            outStream.write('    ```\n');
+            outStream.write(`    ${calculate}\n`);
+            outStream.write('    ```\n');
           });
         }
         if(relevants.length) {
-          outStream.write('relevant:\n');
+          outStream.write('- relevant:\n');
           relevants.forEach(({ name, relevant }) => {
             outStream.write(`  - ${name}\n`);
-            outStream.write(`    - \`${relevant}\`\n`);
+            outStream.write('    ```\n');
+            outStream.write(`    ${relevant}\n`);
+            outStream.write('    ```\n');
           });
         }
       });
