@@ -1,19 +1,13 @@
 const fs = require('fs');
+const path = require('path');
 const xml2js = require('xml2js');
 const xmlParser = new xml2js.Parser({ normalize: true });
 
-const getXmlFilePaths = (dirPath) => {
-  return fs
-    .readdirSync(dirPath)
-    .reduce((xmlFiles, file) => {
-      const filePath = `${dirPath}/${file}`;
-      if(fs.statSync(filePath).isDirectory() && 'node_modules' !== file) {
-        return xmlFiles.concat(getXmlFilePaths(filePath));
-      } else if(file.endsWith('.xml')) {
-        xmlFiles.push(filePath);
-      }
-      return xmlFiles;
-    }, []);
+const getXmlFilePaths = (configDir, formType) => {
+  const formsPath = path.resolve(configDir, 'forms', formType);
+  return fs.readdirSync(formsPath)
+    .filter(fileName => fileName.endsWith('.xml'))
+    .map(fileName => path.resolve(formsPath, fileName));
 };
 
 const getXmlFile = (fileName) => {
@@ -22,12 +16,14 @@ const getXmlFile = (fileName) => {
     .then(data => ({fileName, data}));
 };
 
+const getXmlFiles = (configDir, formNames) => {
+  const formNameFilter = filePath => formNames.length === 0 || formNames.includes(path.basename(filePath, '.xml'));
+  const appForms = getXmlFilePaths(configDir, 'app').filter(formNameFilter);
+  const contactForms = getXmlFilePaths(configDir, 'contact').filter(formNameFilter);
+  return Promise.all([...appForms, ...contactForms].map((fileName) => getXmlFile(fileName)));
+};
+
 module.exports = {
-  getXmlFile,
-  getAllXmlFiles: (configDir) => {
-    return Promise.all(
-      getXmlFilePaths(configDir)
-        .map((fileName) => getXmlFile(fileName))
-    );
-  }
+  getXmlFilePaths,
+  getXmlFiles
 };

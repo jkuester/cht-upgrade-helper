@@ -11,14 +11,15 @@ NAME
 SYNOPSIS
   cht-upgrade-helper
 Or:
-  cht-upgrade-helper <xml_file_names>
+  cht-upgrade-helper -- <form_names>
 
 DESCRIPTION
   Generates a report of potential config issues that could affect behavior after upgrading to the latest version of the 
   CHT.
   
-  The cht-upgrade-helper command can be run without parameters to generate a report for all the forms nested below the 
-  current directory. Or the names of the XML files to include in the report can be provided.
+  Run the cht-upgrade-helper command from the base directory of the config. If no form names are provided, a report will 
+  be generated for all the forms in the config. If one or more form names are provided, only information for these
+  forms will be included in the report.
   
   Output from the cht-upgrade-helper command is formatted with Markdown and can be saved to a file like this:
     cht-upgrade-helper > output.md 
@@ -27,7 +28,7 @@ DESCRIPTION
 
 (async () => {
   try {
-    const cmdArgs = parseArgs(process.argv.slice(2));
+    const cmdArgs = parseArgs(process.argv.slice(2), { '--' : true });
     if(cmdArgs.help) {
       printUsage();
       return;

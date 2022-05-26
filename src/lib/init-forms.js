@@ -1,15 +1,15 @@
 const Harness = require('cht-conf-test-harness');
-const fs = require('fs');
+const { getXmlFilePaths } = require('./xml-files');
 const path = require('path');
 
-const getFormNames = (baseDir, formType) => {
-  return fs
-    .readdirSync(path.join(baseDir, 'forms', formType))
-    .filter(fileName => fileName.endsWith('.xml'))
+const getFormNames = (baseDir, formType, formNames) => {
+  const formNameFilter = filePath => formNames.length === 0 || formNames.includes(path.basename(filePath, '.xml'));
+  return getXmlFilePaths(baseDir, formType)
+    .filter(formNameFilter)
     .map(fileName => fileName.substring(0, fileName.length - 4));
 };
 
-module.exports = async(outStream, configDir) => {
+module.exports = async(outStream, configDir, formNames) => {
   const harness = new Harness({
     verbose: false,
     directory: configDir,
@@ -19,7 +19,7 @@ module.exports = async(outStream, configDir) => {
   await harness.start();
 
   const appErrors = [];
-  const appFormNames = getFormNames(configDir, 'app');
+  const appFormNames = getFormNames(configDir, 'app', formNames);
   for(let i = 0; i < appFormNames.length; i++) {
     const formName = appFormNames[i];
     await harness.clear();
@@ -31,7 +31,7 @@ module.exports = async(outStream, configDir) => {
   }
 
   const contactErrors = [];
-  const contactFormNames = getFormNames(configDir, 'contact');
+  const contactFormNames = getFormNames(configDir, 'contact', formNames);
   for(let i = 0; i < contactFormNames.length; i++) {
     const formName = contactFormNames[i];
     await harness.clear();
