@@ -74,8 +74,8 @@ module.exports = (outStream, configDir, forms) => {
       'Previously, if a question with a default value was never relevant, its default value would be used ' +
       'for calculations and other form logic.\n');
     outStream.write('Now, however, the value from a non-relevant field will always be empty, regardless of the default value. ' +
-      '(Note that because of [this Enketo issue](https://github.com/enketo/enketo-core/issues/849) it can appear that ' +
-      'the default value is being used while filling out the form. But, when the form it saved, the value will be cleared ' +
+      '(Note that because of [this known issue](https://github.com/medic/cht-core/issues/7674) it can appear that ' +
+      'the default value is being used while filling out the form. However, when the form it saved, the value will be cleared ' +
       'and all the dependent logic will be recalculated.)\n');
     outStream.write('So, questions with default values that might be non-relevant, but are used in other form logic ' +
       'should be reviewed (these are listed below).\n');
