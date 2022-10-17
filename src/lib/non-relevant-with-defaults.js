@@ -1,79 +1,63 @@
-const { getFormFields, getCalculates, getRelevants, getFormModel } = require('./common');
+const { XPATH_MODEL, getPrimaryInstanceNode, getNodes, getBindNodes } = require('./common');
 
-const getFormInstance = (formData, instanceName) => {
-  const formModel = getFormModel(formData);
-  if(!formModel.instance || !formModel.instance.length) {
-    return {};
-  }
+const XPATH_MODEL_INSTANCE_PATH = `${XPATH_MODEL}/instance`;
+const EXPRESSION_ATTRIBUTES = ['calculate', 'constraint', 'readonly', 'relevant', 'required',];
 
-  const instanceWrapper = formModel.instance.find(inst => Object.keys(inst).includes(instanceName));
-  if(!instanceWrapper || !instanceWrapper[instanceName].length) {
-    return {};
-  }
-
-  return instanceWrapper[instanceName][0];
+const getNodesWithDefaultValues = (xmlDoc) => {
+  const primaryInstance = getPrimaryInstanceNode(xmlDoc);
+  return getNodes(primaryInstance, './/*[normalize-space(text())]');
 };
 
-const isObject = n => typeof n === `object`;
-const getPrimitiveOrNull = val => isObject(val) ? null : val;
-
-const findDefaultVal = (instData, steps) => {
-  const current = instData[steps.shift()];
-  if(!current) {
-    return null;
+const getNodePath = (node, currentPath = '') => {
+  const newPath = `/${node.tagName}${currentPath}`;
+  if (newPath.startsWith(XPATH_MODEL_INSTANCE_PATH)) {
+    return newPath.substring(XPATH_MODEL_INSTANCE_PATH.length);
   }
-  if(!steps.length) {
-    return getPrimitiveOrNull(current.length ? current[0] : current);
-  }
-  if(isObject(current)) {
-    return findDefaultVal(current.length ? current[0] : current, steps);
-  }
-  return getPrimitiveOrNull(current);
+  return getNodePath(node.parentNode, newPath);
 };
 
-const getFieldSteps = fieldName => fieldName.split('/').filter(s => s.length);
+const getDefaultFieldPaths = xmlDoc => getNodesWithDefaultValues(xmlDoc)
+  .map(node => getNodePath(node));
 
-const getDefaultValue = (formData, fieldName) => {
-  const fieldSteps = getFieldSteps(fieldName);
-  const instance = getFormInstance(formData, fieldSteps.shift());
-  return findDefaultVal(instance, fieldSteps);
+const hasRelevantExpression = (fieldPath, bindNodes) => {
+  const bindNode = bindNodes.find(bind => bind.getAttribute('nodeset') === fieldPath);
+  if (!bindNode) {
+    return false;
+  }
+  const relevant = bindNode.getAttribute('relevant');
+  return relevant && relevant !== 'true()';
 };
 
-const getDefaults = (formData, fields) => {
-  return fields.filter(field => getDefaultValue(formData, field.nodeset));
-};
+const expressionContainsFieldPath = (expression, fieldPath) => new RegExp(`${fieldPath}[^w/]`).test(expression);
 
-const getNonRelevantQuestionsWithDefaultsToCheck = (formData) => {
-  const formFields = getFormFields(formData);
-  const calculates = getCalculates(formFields);
-  const relevants = getRelevants(formFields);
-  const defaultFields = getDefaults(formData, formFields);
+const usedInExpression = (expressionName, fieldPath, bindNodes) => bindNodes
+  .map(bindNode => bindNode.getAttribute(expressionName))
+  .find(expression => expression && expressionContainsFieldPath(expression, fieldPath));
 
-  return defaultFields
-    .filter(defaultField => !defaultField.nodeset.includes('/inputs/'))
-    .filter(defaultField => {
-      const steps = getFieldSteps(defaultField.nodeset);
-      return steps.find(step => relevants.filter(relevant => relevant.nodeset.endsWith(`/${step}`)).length);
-    }).filter(defaultField => {
-      const localName = defaultField.nodeset.split('/').pop();
-      const namePattern = new RegExp(`/${localName}[^w|/]`);
-      if(calculates.find(calc => namePattern.test(calc.calculate))) {
-        return true;
-      }
-      return relevants.find(relev => namePattern.test(relev.relevant));
-    });
+const getNonRelevantQuestionsWithDefaultsToCheck = (xmlDoc) => {
+  const bindNodes = getBindNodes(xmlDoc);
+  return getDefaultFieldPaths(xmlDoc)
+    .filter(defaultFieldPath => !defaultFieldPath.includes('/inputs/'))
+    .filter(defaultFieldPath => hasRelevantExpression(defaultFieldPath, bindNodes))
+    .filter(defaultFieldPath => EXPRESSION_ATTRIBUTES.find(expressionName => usedInExpression(
+      expressionName,
+      defaultFieldPath,
+      bindNodes
+    )))
+    .map(defaultFieldPath => ({ nodeset: defaultFieldPath }));
 };
 
 module.exports = (outStream, configDir, forms) => {
   const nonRelQuestionsWithDefaults = forms
     .map(({ fileName, data }) => ({ fileName, data: getNonRelevantQuestionsWithDefaultsToCheck(data) }))
     .filter(formData => formData.data.length);
-  if(nonRelQuestionsWithDefaults.length) {
+  if (nonRelQuestionsWithDefaults.length) {
     outStream.write('## Non-relevant questions with defaults to check\n');
     outStream.write('The behavior of default values for non-relevant fields has changed. ' +
       'Previously, if a question with a default value was never relevant, its default value would be used ' +
       'for calculations and other form logic.\n');
-    outStream.write('Now, however, the value from a non-relevant field will always be empty, regardless of the default value. ' +
+    outStream.write(
+      'Now, however, the value from a non-relevant field will always be empty, regardless of the default value. ' +
       '(Note that because of [this known issue](https://github.com/medic/cht-core/issues/7674) it can appear that ' +
       'the default value is being used while filling out the form. However, when the form it saved, the value will be cleared ' +
       'and all the dependent logic will be recalculated.)\n');
