@@ -161,10 +161,12 @@ const assertIntro = (output) => {
 const assertField = (output, fieldPath, { calculations }) => {
   expect(output.shift()).to.deep.equal([`#### ${fieldPath}\n`]);
   if(calculations) {
-    expect(output.shift()).to.deep.equal(['calculate:\n']);
+    expect(output.shift()).to.deep.equal(['- calculate:\n']);
     calculations.forEach(({ name, calculate }) => {
       expect(output.shift()).to.deep.equal([`  - ${name}\n`]);
-      expect(output.shift()).to.deep.equal([`    - \`${calculate}\`\n`]);
+      expect(output.shift()).to.deep.equal(['    ```\n']);
+      expect(output.shift()).to.deep.equal([`    ${calculate}\n`]);
+      expect(output.shift()).to.deep.equal(['    ```\n']);
     });
   }
 };
