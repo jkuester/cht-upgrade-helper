@@ -86,14 +86,9 @@ const assertIntro = (output) => {
 describe('non-relevant-with-defaults', () => {
   let outStream;
 
-  beforeEach(() => {
-    outStream = { write: sinon.stub() };
-  });
+  beforeEach(() => outStream = { write: sinon.stub() });
 
-  afterEach(() => {
-    assert.equal(outStream.write.args.length, 0);
-    sinon.restore();
-  });
+  afterEach(() => assert.equal(outStream.write.args.length, 0));
 
   [
     'calculate',

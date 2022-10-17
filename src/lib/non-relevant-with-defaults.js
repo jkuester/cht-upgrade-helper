@@ -1,7 +1,6 @@
-const { XPATH_MODEL, getPrimaryInstanceNode, getNodes, getBindNodes } = require('./common');
+const { EXPRESSION_ATTRIBUTES, XPATH_MODEL, getPrimaryInstanceNode, getNodes, getBindNodes } = require('./common');
 
 const XPATH_MODEL_INSTANCE_PATH = `${XPATH_MODEL}/instance`;
-const EXPRESSION_ATTRIBUTES = ['calculate', 'constraint', 'readonly', 'relevant', 'required',];
 
 const getNodesWithDefaultValues = (xmlDoc) => {
   const primaryInstance = getPrimaryInstanceNode(xmlDoc);
@@ -28,7 +27,7 @@ const hasRelevantExpression = (fieldPath, bindNodes) => {
   return relevant && relevant !== 'true()';
 };
 
-const expressionContainsFieldPath = (expression, fieldPath) => new RegExp(`${fieldPath}[^w/]`).test(expression);
+const expressionContainsFieldPath = (expression, fieldPath) => new RegExp(`(?<=\\W|^)(${fieldPath}[^w/])`).test(expression);
 
 const usedInExpression = (expressionName, fieldPath, bindNodes) => bindNodes
   .map(bindNode => bindNode.getAttribute(expressionName))

@@ -28,7 +28,6 @@
     "cht-conf-test-harness": "git+https://github.com/medic/cht-conf-test-harness.git#enketo-uplift_fix-xsl-issue",
     "eslint": "^6.8.0",
     "minimist": "^1.2.6",
-    "xml2js": "^0.4.23",
     "xpath": "^0.0.32"
   },
   "devDependencies": {
