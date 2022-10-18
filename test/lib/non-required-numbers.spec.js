@@ -66,12 +66,12 @@ describe('non-required-numbers', () => {
   beforeEach(() => outStream = { write: sinon.stub() });
   afterEach(() => assert.equal(outStream.write.args.length, 0));
 
-  it('int used in one calculation', async () => {
+  it('int used in one calculation', () => {
     const fields = [
       { name: '/test_form/my_calc', type: 'string', calculate: ' /test_form/my_number ' },
       { name: '/test_form/my_number', type: 'int' }
     ];
-    const data = await domParser.parseFromString(createXml(fields));
+    const data = domParser.parseFromString(createXml(fields));
 
     nonRequiredNumbers(outStream, CONFIG_DIR, [{ fileName: FILE_PATH, data }]);
 
@@ -81,7 +81,7 @@ describe('non-required-numbers', () => {
     assertField(output, '/test_form/my_number', { calculations: fields.slice(0, 1) });
   });
 
-  it('int used in two calculations', async () => {
+  it('int used in two calculations', () => {
     const fields = [
       { name: '/test_form/my_calc', type: 'string', calculate: ' number(/test_form/my_number) ' },
       {
@@ -91,7 +91,7 @@ describe('non-required-numbers', () => {
       },
       { name: '/test_form/my_number', type: 'int' }
     ];
-    const data = await domParser.parseFromString(createXml(fields));
+    const data = domParser.parseFromString(createXml(fields));
 
     nonRequiredNumbers(outStream, CONFIG_DIR, [{ fileName: FILE_PATH, data }]);
 
@@ -101,7 +101,7 @@ describe('non-required-numbers', () => {
     assertField(output, '/test_form/my_number', { calculations: fields.slice(0, 2) });
   });
 
-  it('int used in calculation with coalesce', async () => {
+  it('int used in calculation with coalesce', () => {
     const fields = [
       {
         name: '/test_form/my_calc',
@@ -110,14 +110,14 @@ describe('non-required-numbers', () => {
       },
       { name: '/test_form/my_number', type: 'int' }
     ];
-    const data = await domParser.parseFromString(createXml(fields));
+    const data = domParser.parseFromString(createXml(fields));
 
     nonRequiredNumbers(outStream, CONFIG_DIR, [{ fileName: FILE_PATH, data }]);
 
     assert.equal(outStream.write.callCount, 0);
   });
 
-  it('two numbers used in a calculation', async () => {
+  it('two numbers used in a calculation', () => {
     const fields = [
       { name: '/test_form/group_1/my_number', type: 'int' },
       { name: '/test_form/group_2/my_number', type: 'decimal' },
@@ -127,7 +127,7 @@ describe('non-required-numbers', () => {
         calculate: '/test_form/group_1/my_number + /test_form/group_2/my_number'
       }
     ];
-    const data = await domParser.parseFromString(createXml(fields));
+    const data = domParser.parseFromString(createXml(fields));
 
     nonRequiredNumbers(outStream, CONFIG_DIR, [{ fileName: FILE_PATH, data }]);
 
@@ -153,7 +153,7 @@ const assertIntro = (output) => {
   ]);
   assert.deepEqual(output.shift(), [
     'One potential fix is to update the `calculation` to use the ' +
-    '[coalesce](https://docs.getodk.org/form-operators-functions/#coalesce) function.So, ' +
+    '[coalesce](https://docs.getodk.org/form-operators-functions/#coalesce) function. So, ' +
     '`${potentially_empty_value} > 0` becomes `coalesce(${potentially_empty_value}, 0) > 0`.\n'
   ]);
   assert.deepEqual(output.shift(), [

@@ -54,7 +54,7 @@ module.exports = (outStream, configDir, forms) => {
     outStream.write('This behavior change can break form logic that expects `0`. ' +
       'All `calculation`s involving non-required number questions should be reviewed (these are listed below).\n');
     outStream.write(
-      'One potential fix is to update the `calculation` to use the [coalesce](https://docs.getodk.org/form-operators-functions/#coalesce) function.' +
+      'One potential fix is to update the `calculation` to use the [coalesce](https://docs.getodk.org/form-operators-functions/#coalesce) function. ' +
       'So, `${potentially_empty_value} > 0` becomes `coalesce(${potentially_empty_value}, 0) > 0`.\n');
     outStream.write('See [this issue](https://github.com/medic/cht-core/issues/7222) for more context.\n');
     numberQuestionsToCheck.forEach(({ fileName, data }) => {

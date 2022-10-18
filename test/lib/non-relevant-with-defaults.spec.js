@@ -97,13 +97,13 @@ describe('non-relevant-with-defaults', () => {
     'relevant',
     'required',
   ].forEach(evalName => {
-    it(`flags question with default value that is not relevant and is used in ${evalName}`, async () => {
+    it(`flags question with default value that is not relevant and is used in ${evalName}`, () => {
       const fields = [
         { name: '/data/summary/details', type: 'string' },
         { name: '/data/name', type: 'string', relevant: 'false()' }
       ];
       fields[0][evalName] = ' /data/name ';
-      const data = await domParser.parseFromString(getXml({
+      const data = domParser.parseFromString(getXml({
         bindData: createBindData(fields),
         nameDefault: 'harambe'
       }));
@@ -117,7 +117,7 @@ describe('non-relevant-with-defaults', () => {
     });
   });
 
-  it('flags multiple questions with default values that are not relevant and are used in calculate', async () => {
+  it('flags multiple questions with default values that are not relevant and are used in calculate', () => {
     const fields = [
       { name: '/data/summary/details', type: 'string', calculate: 'concat(/data/summary/summary_title, /data/name)' },
       { name: '/data/name', type: 'string', relevant: 'false()' },
@@ -125,7 +125,7 @@ describe('non-relevant-with-defaults', () => {
       { name: '/data/summary/summary_title', type: 'string', relevant: '/data/age > 1' },
       { name: '/data/address/street_nbr', type: 'string', relevant: '/data/age > 1' },
     ];
-    const data = await domParser.parseFromString(getXml({
+    const data = domParser.parseFromString(getXml({
       bindData: createBindData(fields),
       nameDefault: 'harambe',
       summaryTitleDefault: 'Summary:'
@@ -142,7 +142,7 @@ describe('non-relevant-with-defaults', () => {
 
   it(
     'does not flag form with questions with default values that are not relevant but are not used in calculate',
-    async () => {
+    () => {
       const fields = [
         { name: '/data/summary/details', type: 'string', calculate: 'concat(1, 2)' },
         { name: '/data/name', type: 'string', relevant: 'false()' },
@@ -150,7 +150,7 @@ describe('non-relevant-with-defaults', () => {
         { name: '/data/summary/summary_title', type: 'string', relevant: '/data/age > 1' },
         { name: '/data/address/street_nbr', type: 'string', relevant: '/data/age > 1' },
       ];
-      const data = await domParser.parseFromString(getXml({
+      const data = domParser.parseFromString(getXml({
         bindData: createBindData(fields),
         nameDefault: 'harambe',
         summaryTitleDefault: 'Summary:'
@@ -166,7 +166,7 @@ describe('non-relevant-with-defaults', () => {
   ].forEach(relevant => {
     it(
       'does not flag form with questions with default values that are always relevant and are used in calculate',
-      async () => {
+      () => {
         const fields = [
           {
             name: '/data/summary/details',
@@ -178,7 +178,7 @@ describe('non-relevant-with-defaults', () => {
           { name: '/data/summary/summary_title', type: 'string', relevant },
           { name: '/data/address/street_nbr', type: 'string', relevant: '/data/age > 1' },
         ];
-        const data = await domParser.parseFromString(getXml({
+        const data = domParser.parseFromString(getXml({
           bindData: createBindData(fields),
           nameDefault: 'harambe',
           summaryTitleDefault: 'Summary:'

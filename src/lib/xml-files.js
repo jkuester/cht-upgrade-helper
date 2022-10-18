@@ -12,8 +12,10 @@ const getXmlFilePaths = (configDir, formType) => {
 
 const getXmlFile = (fileName) => {
   const file = fs.readFileSync(fileName, 'UTF-8');
-  return domParser.parseFromString(file)
-    .then(data => ({fileName, data}));
+  return {
+    fileName,
+    data: domParser.parseFromString(file),
+  };
 };
 
 const getXmlFiles = (configDir, formNames) => {
