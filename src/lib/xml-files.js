@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const xml2js = require('xml2js');
-const xmlParser = new xml2js.Parser({ normalize: true });
+const { DOMParser } = require('@xmldom/xmldom');
+const domParser = new DOMParser();
 
 const getXmlFilePaths = (configDir, formType) => {
   const formsPath = path.resolve(configDir, 'forms', formType);
@@ -12,8 +12,10 @@ const getXmlFilePaths = (configDir, formType) => {
 
 const getXmlFile = (fileName) => {
   const file = fs.readFileSync(fileName, 'UTF-8');
-  return xmlParser.parseStringPromise(file)
-    .then(data => ({fileName, data}));
+  return {
+    fileName,
+    data: domParser.parseFromString(file),
+  };
 };
 
 const getXmlFiles = (configDir, formNames) => {
