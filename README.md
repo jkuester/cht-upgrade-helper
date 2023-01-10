@@ -18,11 +18,29 @@ cht --url=******* validate-app-forms validate-collect-forms validate-contact-for
 
 ---
 
+## Installation
+
+- Clone this repository
+  - `git clone https://github.com/jkuester/cht-upgrade-helper.git`
+- Install the utility
+  - `cd cht-upgrade-helper && npm install --global`
+
+## Usage
+
+You can run the utility by using the `cht-upgrade-helper` command in the base directory of your CHT config. (The directory containing the `app-settings.json` file and the `forms` directory.)
+
+Just running `cht-upgrade-helper` (with no arguments) will output a report for all the forms in the config. 
+
+Alternatively, the names of the forms to include in the report can be provided after `--`. (e.g. `cht-upgrade-helper -- pregnancy delivery person-edit`)
+
+Output from the cht-upgrade-helper command is formatted with [Markdown](https://en.wikipedia.org/wiki/Markdown) and can be saved to a file like this:
+`cht-upgrade-helper > output.md` 
+
 ## `cht-upgrade-helper` Supported Validations
 
 ### Forms load without runtime errors
 
-Each form is loaded in a headless Enketo instance and any runtime errors are recorded. 
+Each form is loaded in a headless Enketo instance and any runtime errors are recorded.
 
 ### Find non-relevant questions with default values
 
@@ -42,20 +60,8 @@ One potential fix is to update the `calculation` to use the [coalesce](https://d
 
 See [this issue](https://github.com/medic/cht-core/issues/7222) for more context.
 
-## Installation
+### Find instances of the `+` operator being used for string concatenation
 
-- Clone this repository
-  - `git clone https://github.com/jkuester/cht-upgrade-helper.git`
-- Install the utility
-  - `cd cht-upgrade-helper && npm install --global`
+The `+` operator can no longer be used to concatenate string values in an expression. Although previous versions of Enketo supported this functionality, it was never part of the ODK Specification. The [`concat` function](https://docs.getodk.org/form-operators-functions/#concat) should be used instead.
 
-## Usage
-
-You can run the utility by using the `cht-upgrade-helper` command in the base directory of your CHT config. (The directory containing the `app-settings.json` file and the `forms` directory.)
-
-Just running `cht-upgrade-helper` (with no arguments) will output a report for all the forms in the config. 
-
-Alternatively, the names of the forms to include in the report can be provided after `--`. (e.g. `cht-upgrade-helper -- pregnancy delivery person-edit`)
-
-Output from the cht-upgrade-helper command is formatted with [Markdown](https://en.wikipedia.org/wiki/Markdown) and can be saved to a file like this:
-`cht-upgrade-helper > output.md` 
+_(Note that this utility only supports checking for instances of concatenating string literals. Detecting concatenations involving node values or the result of expressions is not currently supported.)_
