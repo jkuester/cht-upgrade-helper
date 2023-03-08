@@ -20,10 +20,9 @@ cht --url=******* validate-app-forms validate-collect-forms validate-contact-for
 
 ## Installation
 
-- Clone this repository
-  - `git clone https://github.com/jkuester/cht-upgrade-helper.git`
-- Install the utility
-  - `cd cht-upgrade-helper && npm install --global`
+```shell
+npm i -g git+https://github.com/jkuester/cht-upgrade-helper.git
+```
 
 ## Usage
 
